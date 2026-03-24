@@ -1,471 +1,374 @@
 'use client'
 
 import { useState } from 'react'
-import { Card, CardContent, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
+import RequisitionCard, { type Requisition } from './requisition-card'
+import ProductReviewCard, { type ProductToReview } from './product-review-card'
+import QAProgressDashboard from './qa-progress-dashboard'
+import { motion, AnimatePresence } from 'motion/react'
+import { ArrowLeft, CheckCircle2, Info } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Progress } from '@/components/ui/progress'
-import { cn } from '@/lib/utils'
-import {
-  AlertCircle,
-  TrendingUp,
-  CheckCircle2,
-  ShoppingCart,
-  Settings,
-  Check,
-  X,
-} from 'lucide-react'
 
-const mockRequisitions = {
-  pendientes: [
+const mockRequisitions: Requisition[] = [
+  {
+    id: '1',
+    requisitionNumber: 'REQ-2024-001',
+    agency: 'Departamento de Hacienda',
+    submittedDate: '15 Mar 2024',
+    productCount: 5,
+    reviewedCount: 2,
+    status: 'in-progress',
+    priority: 'high',
+  },
+  {
+    id: '2',
+    requisitionNumber: 'REQ-2024-002',
+    agency: 'Departamento de Seguridad Pública',
+    submittedDate: '14 Mar 2024',
+    productCount: 8,
+    reviewedCount: 0,
+    status: 'pending',
+    priority: 'medium',
+  },
+  {
+    id: '3',
+    requisitionNumber: 'REQ-2024-003',
+    agency: 'Departamento de Estado',
+    submittedDate: '13 Mar 2024',
+    productCount: 3,
+    reviewedCount: 3,
+    status: 'completed',
+    priority: 'low',
+  },
+  {
+    id: '4',
+    requisitionNumber: 'REQ-2024-004',
+    agency: 'Departamento de Educación',
+    submittedDate: '12 Mar 2024',
+    productCount: 12,
+    reviewedCount: 0,
+    status: 'pending',
+    priority: 'high',
+  },
+]
+
+const mockProducts: Record<string, ProductToReview[]> = {
+  '1': [
     {
-      id: '2022-001',
-      fechaRecibo: '2021-07-16',
-      numeroCaso: '22J-00006',
-      idRequisicion: 6,
-      agencia: 'Junta Reglamentadora de Servicio Público',
-      items: 5,
-      total: 15420.5,
-      status: 'Pendiente',
+      id: 'p1',
+      name: 'Laptop Dell Latitude 5520',
+      description: 'Laptop empresarial con procesador Intel Core i7, 16GB RAM, 512GB SSD',
+      price: 1299.99,
+      category: 'Microcomputadoras',
+      subcategory: 'Laptops y notebooks',
+      agency: 'Departamento de Hacienda',
+      brand: 'Dell',
+      model: 'Latitude 5520',
+      aiMatch: {
+        found: true,
+        confidence: 95,
+        existingProduct: {
+          asgItemId: '204-54-005-05-0000000171',
+          name: 'Laptops Dell Latitude 15',
+          price: 1099.66,
+          category: 'Microcomputadoras',
+          subcategory: 'Laptops y notebooks',
+          brand: 'Dell',
+          model: 'Dell Latitude 5520 Xcto',
+        },
+      },
     },
     {
-      id: '2022-002',
-      fechaRecibo: '2021-08-22',
-      numeroCaso: '22J-00012',
-      idRequisicion: 12,
-      agencia: 'Departamento de Hacienda',
-      items: 3,
-      total: 8240,
-      status: 'Pendiente',
+      id: 'p2',
+      name: 'Monitor Dell 24 Pulgadas',
+      description: 'Monitor LED 24" Full HD con soporte ajustable',
+      price: 156.33,
+      category: 'Microcomputadoras',
+      subcategory: 'Monitores color y monocromo',
+      agency: 'Departamento de Hacienda',
+      brand: 'Dell',
+      model: 'P2419H',
+      aiMatch: {
+        found: true,
+        confidence: 98,
+        existingProduct: {
+          asgItemId: '204-60-005-06-0000000175',
+          name: 'Dell Monitor 23.5',
+          price: 156.33,
+          category: 'Microcomputadoras',
+          subcategory: 'Monitores color y monocromo',
+          brand: 'Dell',
+          model: 'Dell 24 P2419H',
+        },
+      },
+    },
+    {
+      id: 'p3',
+      name: 'Teclado y Mouse Dell USB',
+      description: 'Kit de teclado y mouse USB para computadora',
+      price: 20.0,
+      category: 'Periféricos de computador',
+      subcategory: 'Teclados y ratones USB',
+      agency: 'Departamento de Hacienda',
+      brand: 'Dell',
+      model: 'MS116',
+      aiMatch: {
+        found: true,
+        confidence: 92,
+        existingProduct: {
+          asgItemId: '207-66-005-01-0000000174',
+          name: 'Dell Usb Keyboard And Dell Usb Mouse',
+          price: 20.0,
+          category: 'Periféricos de computador',
+          subcategory: 'Teclados y ratones USB',
+          brand: 'Dell',
+          model: 'Dell Ms116',
+        },
+      },
+    },
+    {
+      id: 'p4',
+      name: 'Sistema de Videoconferencia Logitech',
+      description: 'Cámara web HD 1080p con micrófono integrado para reuniones virtuales',
+      price: 299.99,
+      category: 'Equipos Audiovisuales',
+      subcategory: 'Cámaras de videoconferencia',
+      agency: 'Departamento de Hacienda',
+      brand: 'Logitech',
+      model: 'Rally Bar',
+      aiMatch: { found: false, confidence: 0 },
+      newItemId: '840-92-002-01-0000002450',
+    },
+    {
+      id: 'p5',
+      name: 'Impresora Multifuncional HP LaserJet Pro',
+      description: 'Impresora láser multifuncional con escáner, copiadora y WiFi',
+      price: 449.99,
+      category: 'Equipos de oficina',
+      subcategory: 'Impresoras multifuncionales',
+      agency: 'Departamento de Hacienda',
+      brand: 'HP',
+      model: 'LaserJet Pro MFP M428fdw',
+      aiMatch: { found: false, confidence: 0 },
+      newItemId: '600-48-002-01-0000002451',
     },
   ],
-  enProgreso: [
+  '2': [
     {
-      id: '2022-003',
-      fechaRecibo: '2021-09-10',
-      numeroCaso: '22J-00015',
-      idRequisicion: 15,
-      agencia: 'Power Equipment PR',
-      items: 2,
-      total: 1875,
-      status: 'En Progreso',
-      procesados: 1,
-      totalItems: 2,
-    },
-  ],
-  completadas: [],
-}
-
-const mockItem = {
-  requisicionId: '2022-001',
-  total: 15420.5,
-  proveedor: 'Tech Solutions PR',
-  status: 'Pendiente',
-  items: [
-    {
-      id: 1,
-      description: 'Aire Acondicionado 48000 BTU Daikin',
-      cantidad: 2,
-      precioUnit: 3890,
-      total: 7780,
-      sugerencia: {
-        confianza: 95,
-        asgItemId: '031-02-002-01-0000000058',
-        nombre: 'Adquisicion Unidad A/C 48,000Btu Daikin Aruf',
-        marca: 'Daikin',
-        categoria: 'Equipos HVAC',
-        precioCatalogo: 3890,
-        modelo: 'Aruf',
+      id: 'p6',
+      name: 'Aire Acondicionado Mini Split 18,000 BTU',
+      description: 'Unidad de aire acondicionado tipo mini split montaje en pared',
+      price: 1058.0,
+      category: 'Equipos HVAC',
+      subcategory: 'Aire acondicionado tipo mini split',
+      agency: 'Departamento de Seguridad Pública',
+      brand: 'Trane',
+      model: 'Clase A',
+      aiMatch: {
+        found: true,
+        confidence: 89,
+        existingProduct: {
+          asgItemId: '031-72-006-06-0000001014',
+          name: 'Acondicionador De Aire Tipo Mini Split (Pared) De 18,000 Btu Y 230 Voltios',
+          price: 1058.0,
+          category: 'Equipos de HVAC',
+          subcategory: 'Unidades Montadas en Pared',
+          brand: 'Trane',
+          model: 'Clase A Real Capacity',
+        },
       },
     },
   ],
-  procesados: 0,
-  totalItems: 5,
 }
 
 export default function QADashboard() {
-  const [activeTab, setActiveTab] = useState('pendientes')
-  const [selectedRequisicion, setSelectedRequisicion] = useState(
-    mockRequisitions.pendientes[0]
-  )
+  const [selectedRequisition, setSelectedRequisition] = useState<Requisition | null>(null)
+  const [products, setProducts] = useState<ProductToReview[]>([])
+  const [currentIndex, setCurrentIndex] = useState(0)
+  const [reviewedProducts, setReviewedProducts] = useState(0)
+  const [approvedMatches, setApprovedMatches] = useState(0)
+  const [rejectedMatches, setRejectedMatches] = useState(0)
 
-  const summaryCards = [
-    {
-      title: 'Pendientes',
-      value: `${mockRequisitions.pendientes.length} Requisiciones`,
-      icon: AlertCircle,
-      bgColor: 'bg-yellow-50 dark:bg-yellow-950',
-      iconColor: 'text-yellow-600 dark:text-yellow-400',
-      borderColor: 'border-yellow-200 dark:border-yellow-800',
-    },
-    {
-      title: 'En Progreso',
-      value: `${mockRequisitions.enProgreso.length} Requisiciones`,
-      icon: TrendingUp,
-      bgColor: 'bg-blue-50 dark:bg-blue-950',
-      iconColor: 'text-blue-600 dark:text-blue-400',
-      borderColor: 'border-blue-200 dark:border-blue-800',
-    },
-    {
-      title: 'Completadas',
-      value: `${mockRequisitions.completadas.length} Requisiciones`,
-      icon: CheckCircle2,
-      bgColor: 'bg-green-50 dark:bg-green-950',
-      iconColor: 'text-green-600 dark:text-green-400',
-      borderColor: 'border-green-200 dark:border-green-800',
-    },
-    {
-      title: 'Total Items',
-      value: '10 Para revisar',
-      icon: ShoppingCart,
-      bgColor: 'bg-white dark:bg-gray-900',
-      iconColor: 'text-gray-600 dark:text-gray-400',
-      borderColor: 'border-gray-200 dark:border-gray-800',
-    },
-  ]
+  const totalProducts = Object.values(mockProducts).flat().length
+  const aiAccuracy =
+    approvedMatches + rejectedMatches > 0
+      ? Math.round((approvedMatches / (approvedMatches + rejectedMatches)) * 100)
+      : 85
 
-  const getStatusBadge = (status: string) => {
-    if (status === 'Pendiente') {
-      return (
-        <Badge className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200 border-yellow-300 dark:border-yellow-700">
-          {status}
-        </Badge>
-      )
+  const handleRequisitionClick = (requisition: Requisition) => {
+    setSelectedRequisition(requisition)
+    setProducts(mockProducts[requisition.id] || [])
+    setCurrentIndex(0)
+  }
+
+  const handleApprove = () => {
+    setReviewedProducts((prev) => prev + 1)
+    if (products[currentIndex]?.aiMatch?.found) {
+      setApprovedMatches((prev) => prev + 1)
     }
-    if (status === 'En Progreso') {
-      return (
-        <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 border-blue-300 dark:border-blue-700">
-          {status}
-        </Badge>
-      )
+    setCurrentIndex((prev) => prev + 1)
+  }
+
+  const handleReject = () => {
+    setReviewedProducts((prev) => prev + 1)
+    if (products[currentIndex]?.aiMatch?.found) {
+      setRejectedMatches((prev) => prev + 1)
     }
-    return (
-      <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 border-green-300 dark:border-green-700">
-        {status}
-      </Badge>
-    )
+    setCurrentIndex((prev) => prev + 1)
+  }
+
+  const handleBackToList = () => {
+    setSelectedRequisition(null)
+    setProducts([])
+    setCurrentIndex(0)
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
-      <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
-        {/* Title */}
-        <h1 className="text-4xl font-bold text-foreground mb-6">QA</h1>
-
-        {/* Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          {summaryCards.map((card, index) => {
-            const Icon = card.icon
-            return (
-              <Card
-                key={index}
-                className={cn(
-                  card.bgColor,
-                  card.borderColor,
-                  'border-2'
-                )}
-              >
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-muted-foreground mb-1">
-                        {card.title}
-                      </p>
-                      <p className="text-lg font-semibold text-foreground">
-                        {card.value}
-                      </p>
-                    </div>
-                    <Icon className={cn('w-8 h-8', card.iconColor)} />
-                  </div>
-                </CardContent>
-              </Card>
-            )
-          })}
+    <div className="min-h-screen bg-gradient-to-br from-[#F8FAFC] via-white to-[#F1F5F9]">
+      {/* QA Title with gradient */}
+      <div className="bg-white border-b border-[#E2E8F0]">
+        <div className="px-8 py-6">
+          <div className="flex items-center gap-4">
+            <div className="w-14 h-14 bg-gradient-to-br from-[#16A34A] to-[#10B981] rounded-xl flex items-center justify-center shadow-lg">
+              <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold text-[#0F172A]">Quality Assurance</h1>
+              <p className="text-base text-[#475569] mt-1">
+                Validación inteligente y control de calidad de datos con IA
+              </p>
+            </div>
+          </div>
         </div>
+      </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Left Section - Requisiciones */}
-          <div className="space-y-4">
-            <Card className="border-2 border-purple-200 dark:border-purple-800 rounded-t-lg overflow-hidden pt-0">
-              <div className="bg-purple-600 text-white p-4 h-16 flex items-center">
-                <CardTitle className="text-xl font-bold">Requisiciones</CardTitle>
+      <div className="max-w-[1600px] mx-auto p-8">
+        {!selectedRequisition ? (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Left Column - Requisitions */}
+            <div className="lg:col-span-2">
+              <div className="mb-6">
+                <h2 className="text-2xl font-bold text-[#0F172A] mb-2">Control de Calidad</h2>
+                <p className="text-[#64748B]">
+                  Revisa y valida las requisiciones enviadas con asistencia de IA
+                </p>
               </div>
-              <CardContent className="p-0">
-                <Tabs
-                  value={activeTab}
-                  onValueChange={setActiveTab}
-                  className="w-full"
-                >
-                  <TabsList className="w-full rounded-none border-b bg-gray-100 dark:bg-gray-900">
-                    <TabsTrigger value="pendientes" className="flex-1">
-                      Pendientes
-                    </TabsTrigger>
-                    <TabsTrigger value="enProgreso" className="flex-1">
-                      En Progreso
-                    </TabsTrigger>
-                    <TabsTrigger value="completadas" className="flex-1">
-                      Completadas
-                    </TabsTrigger>
-                  </TabsList>
 
-                  <TabsContent value="pendientes" className="p-4 space-y-4">
-                    {mockRequisitions.pendientes.map((req) => (
-                      <Card
-                        key={req.id}
-                        className="cursor-pointer hover:shadow-md transition-shadow"
-                        onClick={() => setSelectedRequisicion(req)}
-                      >
-                        <CardContent className="p-4">
-                          <div className="flex items-start justify-between mb-3">
-                            <div>
-                              <h3 className="text-lg font-bold text-foreground">
-                                Requisición {req.id}
-                              </h3>
-                              <p className="text-sm text-muted-foreground">
-                                {req.agencia}
-                              </p>
-                            </div>
-                            {getStatusBadge(req.status)}
-                          </div>
-                          <div className="grid grid-cols-2 gap-2 text-sm">
-                            <div>
-                              <span className="text-muted-foreground">
-                                Fecha Recibo:
-                              </span>{' '}
-                              <span className="font-medium">{req.fechaRecibo}</span>
-                            </div>
-                            <div>
-                              <span className="text-muted-foreground">
-                                Número de Caso:
-                              </span>{' '}
-                              <span className="font-medium">{req.numeroCaso}</span>
-                            </div>
-                            <div>
-                              <span className="text-muted-foreground">
-                                ID Requisición:
-                              </span>{' '}
-                              <span className="font-medium">{req.idRequisicion}</span>
-                            </div>
-                          </div>
-                          <div className="mt-3 pt-3 border-t">
-                            <span className="text-sm text-muted-foreground">
-                              {req.items} items
-                            </span>{' '}
-                            <span className="text-sm font-semibold text-green-600 dark:text-green-400">
-                              ${req.total.toLocaleString()}
-                            </span>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </TabsContent>
-
-                  <TabsContent value="enProgreso" className="p-4 space-y-4">
-                    {mockRequisitions.enProgreso.map((req) => (
-                      <Card
-                        key={req.id}
-                        className="cursor-pointer hover:shadow-md transition-shadow"
-                        onClick={() => setSelectedRequisicion(req)}
-                      >
-                        <CardContent className="p-4">
-                          <div className="flex items-start justify-between mb-3">
-                            <div>
-                              <h3 className="text-lg font-bold text-foreground">
-                                Requisición {req.id}
-                              </h3>
-                              <p className="text-sm text-muted-foreground">
-                                {req.agencia}
-                              </p>
-                            </div>
-                            {getStatusBadge(req.status)}
-                          </div>
-                          {req.procesados !== undefined && (
-                            <div className="mb-3">
-                              <Progress
-                                value={(req.procesados / req.totalItems) * 100}
-                                className="h-2"
-                              />
-                              <p className="text-xs text-muted-foreground mt-1">
-                                {req.procesados}/{req.totalItems} procesados
-                              </p>
-                            </div>
-                          )}
-                          <div className="grid grid-cols-2 gap-2 text-sm">
-                            <div>
-                              <span className="text-muted-foreground">
-                                Fecha Recibo:
-                              </span>{' '}
-                              <span className="font-medium">{req.fechaRecibo}</span>
-                            </div>
-                            <div>
-                              <span className="text-muted-foreground">
-                                Número de Caso:
-                              </span>{' '}
-                              <span className="font-medium">{req.numeroCaso}</span>
-                            </div>
-                          </div>
-                          <div className="mt-3 pt-3 border-t">
-                            <span className="text-sm font-semibold text-green-600 dark:text-green-400">
-                              ${req.total.toLocaleString()}
-                            </span>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </TabsContent>
-
-                  <TabsContent value="completadas" className="p-4">
-                    <p className="text-center text-muted-foreground py-8">
-                      No hay requisiciones completadas
+              <div className="bg-gradient-to-r from-[#EFF6FF] to-[#DBEAFE] rounded-xl p-4 mb-6 border border-[#BFDBFE]">
+                <div className="flex items-start gap-3">
+                  <Info className="w-5 h-5 text-[#0B5FCC] mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="text-sm font-semibold text-[#0F172A] mb-1">
+                      Sistema de Validación Inteligente
                     </p>
-                  </TabsContent>
-                </Tabs>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Right Section - Item Review with AI Suggestions */}
-          <div className="space-y-4">
-            <Card className="border-2 border-purple-200 dark:border-purple-800 rounded-t-lg overflow-hidden pt-0">
-              <div className="bg-purple-600 text-white p-4 h-16 flex flex-row items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Settings className="w-5 h-5" />
-                  <CardTitle className="text-xl font-bold">
-                    Revisión de Items - Sugerencias AI
-                  </CardTitle>
-                </div>
-                <Badge className="bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-200 border-pink-300 dark:border-pink-700">
-                  {mockItem.procesados}/{mockItem.totalItems} Procesados
-                </Badge>
-              </div>
-              <CardContent className="p-4 space-y-4">
-                {/* Requisición Details */}
-                <Card>
-                  <CardContent className="p-4">
-                    <div className="space-y-2">
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm font-semibold">Requisición:</span>
-                        <span className="text-sm font-bold">{mockItem.requisicionId}</span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm font-semibold">Total:</span>
-                        <span className="text-sm font-bold text-green-600 dark:text-green-400">
-                          ${mockItem.total.toLocaleString()}
-                        </span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm font-semibold">Proveedor:</span>
-                        <span className="text-sm">{mockItem.proveedor}</span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm font-semibold">Estado:</span>
-                        {getStatusBadge(mockItem.status)}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Item Details */}
-                {mockItem.items.map((item) => (
-                  <div key={item.id} className="space-y-3">
-                    <Card>
-                      <CardContent className="p-4">
-                        <h4 className="font-bold text-lg mb-3">ITEM #{item.id}</h4>
-                        <div className="space-y-2">
-                          <div>
-                            <span className="text-sm font-semibold">Description:</span>
-                            <p className="text-sm">{item.description}</p>
-                          </div>
-                          <div className="grid grid-cols-2 gap-2">
-                            <div>
-                              <span className="text-sm font-semibold">Cantidad:</span>
-                              <span className="text-sm ml-2">{item.cantidad}</span>
-                            </div>
-                            <div>
-                              <span className="text-sm font-semibold">Precio Unit:</span>
-                              <span className="text-sm ml-2">
-                                ${item.precioUnit.toLocaleString()}
-                              </span>
-                            </div>
-                          </div>
-                          <div>
-                            <span className="text-sm font-semibold">Total:</span>
-                            <span className="text-sm ml-2 font-bold text-green-600 dark:text-green-400">
-                              ${item.total.toLocaleString()}
-                            </span>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-
-                    {/* AI Suggestion */}
-                    <Card className="bg-pink-50 dark:bg-pink-950 border-pink-200 dark:border-pink-800">
-                      <CardContent className="p-4">
-                        <div className="flex justify-between items-start mb-3">
-                          <h5 className="font-semibold text-sm">
-                            Sugerencia AI del Item Master
-                          </h5>
-                          <Badge className="bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-200 border-pink-300 dark:border-pink-700">
-                            95% confianza
-                          </Badge>
-                        </div>
-                        <div className="space-y-2 text-sm">
-                          <div>
-                            <span className="font-semibold">ASG-ITEM-ID:</span>
-                            <a
-                              href="#"
-                              className="text-blue-600 dark:text-blue-400 underline ml-2"
-                            >
-                              {item.sugerencia.asgItemId}
-                            </a>
-                          </div>
-                          <div>
-                            <span className="font-semibold">Nombre:</span>
-                            <span className="ml-2">{item.sugerencia.nombre}</span>
-                          </div>
-                          <div>
-                            <span className="font-semibold">Marca:</span>
-                            <span className="ml-2">{item.sugerencia.marca}</span>
-                          </div>
-                          <div>
-                            <span className="font-semibold">Categoría:</span>
-                            <span className="ml-2">{item.sugerencia.categoria}</span>
-                          </div>
-                          <div>
-                            <span className="font-semibold">Precio Catálogo:</span>
-                            <span className="ml-2 font-bold text-green-600 dark:text-green-400">
-                              ${item.sugerencia.precioCatalogo.toLocaleString()}
-                            </span>
-                          </div>
-                          <div>
-                            <span className="font-semibold">Modelo:</span>
-                            <span className="ml-2">{item.sugerencia.modelo}</span>
-                          </div>
-                        </div>
-                        <div className="flex gap-2 mt-4">
-                          <Button
-                            className="flex-1 bg-green-600 hover:bg-green-700 text-white"
-                          >
-                            <Check className="w-4 h-4 mr-2" />
-                            Aceptar Sugerencia
-                          </Button>
-                          <Button
-                            variant="destructive"
-                            className="flex-1"
-                          >
-                            <X className="w-4 h-4 mr-2" />
-                            Rechazar
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
+                    <p className="text-xs text-[#475569]">
+                      Nuestra IA analiza cada producto y sugiere matches automáticos del Item Master.
+                      Revisa las sugerencias y aprueba o rechaza según tu criterio profesional.
+                    </p>
                   </div>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                {mockRequisitions.map((requisition) => (
+                  <RequisitionCard
+                    key={requisition.id}
+                    requisition={requisition}
+                    onClick={() => handleRequisitionClick(requisition)}
+                  />
                 ))}
-              </CardContent>
-            </Card>
+              </div>
+            </div>
+
+            {/* Right Column - Dashboard */}
+            <div className="lg:col-span-1">
+              <QAProgressDashboard
+                totalRequisitions={mockRequisitions.length}
+                reviewedRequisitions={mockRequisitions.filter((r) => r.status === 'completed').length}
+                totalProducts={totalProducts}
+                reviewedProducts={reviewedProducts}
+                approvedMatches={approvedMatches}
+                rejectedMatches={rejectedMatches}
+                aiAccuracy={aiAccuracy}
+              />
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Left Column - Review Cards */}
+            <div className="lg:col-span-2">
+              <div className="mb-6">
+                <Button
+                  onClick={handleBackToList}
+                  variant="ghost"
+                  className="mb-4 text-[#64748B] hover:text-[#0F172A]"
+                >
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  Volver a Requisiciones
+                </Button>
+                <h2 className="text-3xl font-bold text-[#0F172A] mb-2">
+                  {selectedRequisition.requisitionNumber}
+                </h2>
+                <p className="text-[#64748B]">{selectedRequisition.agency}</p>
+              </div>
+
+              {currentIndex < products.length ? (
+                <div className="relative h-[700px]">
+                  <AnimatePresence>
+                    {products
+                      .slice(currentIndex, currentIndex + 2)
+                      .reverse()
+                      .map((product, idx) => (
+                        <ProductReviewCard
+                          key={product.id}
+                          product={product}
+                          onApprove={handleApprove}
+                          onReject={handleReject}
+                          isTop={idx === 1}
+                        />
+                      ))}
+                  </AnimatePresence>
+                </div>
+              ) : (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="bg-white rounded-2xl border-2 border-[#E2E8F0] p-12 text-center"
+                >
+                  <div className="w-20 h-20 bg-gradient-to-br from-[#10B981] to-[#059669] rounded-full flex items-center justify-center mx-auto mb-6">
+                    <CheckCircle2 className="w-10 h-10 text-white" />
+                  </div>
+                  <h2 className="text-2xl font-bold text-[#0F172A] mb-2">
+                    ¡Requisición Completada!
+                  </h2>
+                  <p className="text-[#64748B] mb-6">
+                    Has revisado todos los productos de esta requisición
+                  </p>
+                  <Button
+                    onClick={handleBackToList}
+                    className="bg-gradient-to-r from-[#0B5FCC] to-[#1E40AF] text-white"
+                  >
+                    Volver a Requisiciones
+                  </Button>
+                </motion.div>
+              )}
+            </div>
+
+            {/* Right Column - Progress */}
+            <div className="lg:col-span-1">
+              <QAProgressDashboard
+                totalRequisitions={mockRequisitions.length}
+                reviewedRequisitions={mockRequisitions.filter((r) => r.status === 'completed').length}
+                totalProducts={totalProducts}
+                reviewedProducts={reviewedProducts}
+                approvedMatches={approvedMatches}
+                rejectedMatches={rejectedMatches}
+                aiAccuracy={aiAccuracy}
+              />
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )
