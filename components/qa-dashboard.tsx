@@ -4,8 +4,9 @@ import { useState } from 'react'
 import RequisitionCard, { type Requisition } from './requisition-card'
 import ProductReviewCard, { type ProductToReview } from './product-review-card'
 import QAProgressDashboard from './qa-progress-dashboard'
+import AgentTestDialog from './agent-test-dialog'
 import { motion, AnimatePresence } from 'motion/react'
-import { ArrowLeft, CheckCircle2, Info } from 'lucide-react'
+import { ArrowLeft, CheckCircle2, Info, FlaskConical } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 const mockRequisitions: Requisition[] = [
@@ -187,6 +188,7 @@ export default function QADashboard() {
   const [reviewedProducts, setReviewedProducts] = useState(0)
   const [approvedMatches, setApprovedMatches] = useState(0)
   const [rejectedMatches, setRejectedMatches] = useState(0)
+  const [testDialogOpen, setTestDialogOpen] = useState(false)
 
   const totalProducts = Object.values(mockProducts).flat().length
   const aiAccuracy =
@@ -224,21 +226,32 @@ export default function QADashboard() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#F8FAFC] via-white to-[#F1F5F9]">
+      <AgentTestDialog open={testDialogOpen} onOpenChange={setTestDialogOpen} />
+
       {/* QA Title with gradient */}
       <div className="bg-white border-b border-[#E2E8F0]">
         <div className="px-8 py-6">
-          <div className="flex items-center gap-4">
-            <div className="w-14 h-14 bg-gradient-to-br from-[#16A34A] to-[#10B981] rounded-xl flex items-center justify-center shadow-lg">
-              <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 bg-gradient-to-br from-[#16A34A] to-[#10B981] rounded-xl flex items-center justify-center shadow-lg">
+                <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div>
+                <h1 className="text-3xl font-bold text-[#0F172A]">Quality Assurance</h1>
+                <p className="text-base text-[#475569] mt-1">
+                  Validación inteligente y control de calidad de datos con IA
+                </p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-3xl font-bold text-[#0F172A]">Quality Assurance</h1>
-              <p className="text-base text-[#475569] mt-1">
-                Validación inteligente y control de calidad de datos con IA
-              </p>
-            </div>
+            <Button
+              onClick={() => setTestDialogOpen(true)}
+              className="bg-linear-to-r from-[#0B5FCC] to-[#1E40AF] text-white hover:opacity-90 gap-2 shadow-md"
+            >
+              <FlaskConical className="w-4 h-4" />
+              Test Agent
+            </Button>
           </div>
         </div>
       </div>
