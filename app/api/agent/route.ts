@@ -52,10 +52,14 @@ export async function POST(req: NextRequest) {
       }
     );
 
-    return NextResponse.json({
-      conversationId: conversation.id,
-      output: response.output_text,
-    });
+    let output: unknown;
+    try {
+      output = JSON.parse(response.output_text ?? "");
+    } catch {
+      output = response.output_text;
+    }
+
+    return NextResponse.json(output);
   } catch (err) {
     const message =
       err instanceof Error ? err.message : "Unknown error contacting Azure AI";
