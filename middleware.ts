@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 
 const AUTH_COOKIE_NAME = 'jedi_catalog_auth'
 
-const PUBLIC_PATHS = ['/sso', '/offline']
+const PUBLIC_PATHS = ['/sso', '/offline', '/api/agent']
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
