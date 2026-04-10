@@ -28,7 +28,7 @@ type Phase =
   | { type: 'idle' }
   | { type: 'submitting' }
   | { type: 'polling'; jobId: string; attempt: number }
-  | { type: 'done'; result: Record<string, string> }
+  | { type: 'done'; result: Record<string, string>; input: string }
   | { type: 'error'; message: string }
 
 const POLL_INTERVAL_MS = 3_000
@@ -45,6 +45,7 @@ export default function AgentTestDialog({ open, onOpenChange }: AgentTestDialogP
   const [phase, setPhase] = useState<Phase>({ type: 'idle' })
   const [copied, setCopied] = useState(false)
   const pollTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const submittedMessageRef = useRef<string>('')
 
   const stopPolling = () => {
     if (pollTimerRef.current) {
@@ -77,7 +78,7 @@ export default function AgentTestDialog({ open, onOpenChange }: AgentTestDialogP
         return
       }
 
-      setPhase({ type: 'done', result: data })
+      setPhase({ type: 'done', result: data, input: submittedMessageRef.current })
     } catch {
       setPhase({ type: 'error', message: 'Network error while polling.' })
     }
@@ -86,6 +87,7 @@ export default function AgentTestDialog({ open, onOpenChange }: AgentTestDialogP
   const handleSubmit = async () => {
     if (!message.trim()) return
     stopPolling()
+    submittedMessageRef.current = message.trim()
     setPhase({ type: 'submitting' })
 
     try {
@@ -109,7 +111,7 @@ export default function AgentTestDialog({ open, onOpenChange }: AgentTestDialogP
       }
 
       // 200 → instant result returned directly
-      setPhase({ type: 'done', result: data })
+      setPhase({ type: 'done', result: data, input: submittedMessageRef.current })
     } catch {
       setPhase({ type: 'error', message: 'Network error. Please try again.' })
     }
@@ -308,6 +310,17 @@ export default function AgentTestDialog({ open, onOpenChange }: AgentTestDialogP
           {/* Result */}
           {phase.type === 'done' && (
             <div className="space-y-3">
+              {/* Input echo */}
+              <div className="flex items-start gap-2.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl px-4 py-3">
+                <svg className="w-4 h-4 text-[#64748B] mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-3 3v-3z" />
+                </svg>
+                <div className="min-w-0">
+                  <p className="text-xs text-[#94A3B8] mb-0.5">Input</p>
+                  <p className="text-sm font-medium text-[#0F172A] wrap-break-word">{phase.input}</p>
+                </div>
+              </div>
+
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 rounded-full bg-[#10B981]" />
