@@ -5,8 +5,9 @@ import RequisitionCard, { type Requisition } from './requisition-card'
 import ProductReviewCard, { type ProductToReview } from './product-review-card'
 import QAProgressDashboard from './qa-progress-dashboard'
 import AgentTestDialog from './agent-test-dialog'
+import WorkflowTestDialog from './workflow-test-dialog'
 import { motion, AnimatePresence } from 'motion/react'
-import { ArrowLeft, CheckCircle2, Info, FlaskConical } from 'lucide-react'
+import { ArrowLeft, CheckCircle2, Info, FlaskConical, Workflow } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 const mockRequisitions: Requisition[] = [
@@ -189,6 +190,7 @@ export default function QADashboard() {
   const [approvedMatches, setApprovedMatches] = useState(0)
   const [rejectedMatches, setRejectedMatches] = useState(0)
   const [testDialogOpen, setTestDialogOpen] = useState(false)
+  const [workflowDialogOpen, setWorkflowDialogOpen] = useState(false)
 
   const totalProducts = Object.values(mockProducts).flat().length
   const aiAccuracy =
@@ -227,6 +229,7 @@ export default function QADashboard() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#F8FAFC] via-white to-[#F1F5F9]">
       <AgentTestDialog open={testDialogOpen} onOpenChange={setTestDialogOpen} />
+      <WorkflowTestDialog open={workflowDialogOpen} onOpenChange={setWorkflowDialogOpen} />
 
       {/* QA Title with gradient */}
       <div className="bg-white border-b border-[#E2E8F0]">
@@ -245,13 +248,22 @@ export default function QADashboard() {
                 </p>
               </div>
             </div>
-            <Button
-              onClick={() => setTestDialogOpen(true)}
-              className="bg-linear-to-r from-[#0B5FCC] to-[#1E40AF] text-white hover:opacity-90 gap-2 shadow-md"
-            >
-              <FlaskConical className="w-4 h-4" />
-              Test Agent
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                onClick={() => setTestDialogOpen(true)}
+                className="bg-linear-to-r from-[#0B5FCC] to-[#1E40AF] text-white hover:opacity-90 gap-2 shadow-md"
+              >
+                <FlaskConical className="w-4 h-4" />
+                Test Agent
+              </Button>
+              <Button
+                onClick={() => setWorkflowDialogOpen(true)}
+                className="bg-linear-to-r from-[#7C3AED] to-[#6D28D9] text-white hover:opacity-90 gap-2 shadow-md"
+              >
+                <Workflow className="w-4 h-4" />
+                Test Workflow
+              </Button>
+            </div>
           </div>
         </div>
       </div>
