@@ -147,7 +147,7 @@ export default function WorkflowTestDialog({ open, onOpenChange }: WorkflowTestD
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-[900px] w-[90vw] p-0 gap-0 overflow-hidden rounded-2xl">
+      <DialogContent className="sm:max-w-[900px] w-[90vw] max-h-[90vh] p-0 gap-0 overflow-hidden rounded-2xl flex flex-col">
 
         {/* Header */}
         <DialogHeader className="px-8 pt-7 pb-5">
@@ -168,7 +168,7 @@ export default function WorkflowTestDialog({ open, onOpenChange }: WorkflowTestD
 
         <Separator />
 
-        <div className="px-8 py-6 space-y-6">
+        <div className="px-8 py-6 space-y-6 overflow-y-auto flex-1 min-h-0">
 
           {phase.type === 'idle' && (
             <>
