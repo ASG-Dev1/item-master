@@ -15,6 +15,7 @@ import {
   FileCheck,
   Tag,
   Network,
+  Workflow,
 } from 'lucide-react'
 import { motion } from 'motion/react'
 
@@ -203,6 +204,133 @@ export default function Informacion() {
                 </p>
               </div>
             </motion.div>
+          </div>
+        </div>
+
+        {/* API Reference Section */}
+        <div>
+          <div className="flex items-center gap-3 mb-4">
+            <Workflow className="w-6 h-6 text-[#7C3AED]" />
+            <h2 className="text-xl font-semibold text-[#0F172A]">API Reference</h2>
+          </div>
+
+          <div className="space-y-4">
+            {/* NIGP Agent API */}
+            <div className="rounded-xl border border-[#E2E8F0] bg-white divide-y divide-[#E2E8F0] text-xs shadow-sm">
+              <div className="flex items-center gap-2 px-5 py-3">
+                <div className="w-7 h-7 bg-gradient-to-br from-[#0B5FCC] to-[#1E40AF] rounded-lg flex items-center justify-center">
+                  <Code className="w-4 h-4 text-white" />
+                </div>
+                <div>
+                  <span className="font-bold text-sm text-[#0F172A]">NIGP Classification Agent</span>
+                  <span className="ml-2 font-mono text-[#0B5FCC] bg-[#EFF6FF] px-2 py-0.5 rounded">NIGP-JEDI2</span>
+                </div>
+                <span className="ml-auto text-[#94A3B8]">Base: <code className="text-[#0B5FCC]">/api/agent</code></span>
+              </div>
+
+              <div className="grid grid-cols-[auto_1fr] gap-x-4 px-5 py-3">
+                <div className="flex items-start gap-1.5 pt-0.5">
+                  <span className="font-mono font-bold text-[#10B981] bg-[#DCFCE7] px-1.5 py-0.5 rounded">POST</span>
+                  <code className="text-[#0F172A] font-mono">/api/agent</code>
+                </div>
+                <p className="text-[#475569] leading-relaxed">
+                  Classify an item description. Body: <code className="bg-[#F1F5F9] px-1 rounded">&#123; &quot;message&quot;: &quot;…&quot;, &quot;mode&quot;: &quot;instant&quot; | &quot;queue&quot; &#125;</code>.
+                  Instant mode waits up to 25 s. Returns NIGP category / subcategory JSON.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-[auto_1fr] gap-x-4 px-5 py-3">
+                <div className="flex items-start gap-1.5 pt-0.5">
+                  <span className="font-mono font-bold text-[#0B5FCC] bg-[#DBEAFE] px-1.5 py-0.5 rounded">GET</span>
+                  <code className="text-[#0F172A] font-mono">/api/agent/&#123;jobId&#125;</code>
+                </div>
+                <p className="text-[#475569] leading-relaxed">
+                  Poll job status. Returns <code className="bg-[#F1F5F9] px-1 rounded">202</code> (pending), <code className="bg-[#F1F5F9] px-1 rounded">200</code> (done), or <code className="bg-[#F1F5F9] px-1 rounded">502</code> (error).
+                  Jobs expire after 1 hour.
+                </p>
+              </div>
+
+              <div className="px-5 py-3 bg-[#F8FAFC]">
+                <p className="text-[#64748B] mb-2 font-semibold">Response (200 OK):</p>
+                <pre className="bg-[#1E293B] rounded-lg px-4 py-3 text-[#E2E8F0] font-mono leading-relaxed text-[11px] overflow-x-auto">{`{
+  "nigp_category_code": "204",
+  "nigp_category_description": "Microcomputadoras",
+  "nigp_subcategory_code": "53",
+  "nigp_subcategory_description": "Portátiles / Laptops"
+}`}</pre>
+              </div>
+            </div>
+
+            {/* Workflow API */}
+            <div className="rounded-xl border border-[#EDE9FE] bg-white divide-y divide-[#EDE9FE] text-xs shadow-sm">
+              <div className="flex items-center gap-2 px-5 py-3">
+                <div className="w-7 h-7 bg-gradient-to-br from-[#7C3AED] to-[#6D28D9] rounded-lg flex items-center justify-center">
+                  <Workflow className="w-4 h-4 text-white" />
+                </div>
+                <div>
+                  <span className="font-bold text-sm text-[#0F172A]">Multi-Step Workflow Agent</span>
+                  <span className="ml-2 font-mono text-[#7C3AED] bg-[#EDE9FE] px-2 py-0.5 rounded">Test1</span>
+                </div>
+                <span className="ml-auto text-[#94A3B8]">Base: <code className="text-[#7C3AED]">/api/workflow</code></span>
+              </div>
+
+              <div className="px-5 py-3">
+                <p className="text-[#475569] leading-relaxed mb-2">
+                  Full pipeline agent that standardizes descriptions, generates product names, assigns NIGP codes, and categorizes items in a single call.
+                  Uses the <strong className="text-[#7C3AED]">Test1</strong> Azure AI Foundry workflow agent.
+                </p>
+                <div className="grid grid-cols-2 gap-2 text-[11px]">
+                  {[
+                    { step: '1', label: 'Standardize Description', color: 'bg-[#DBEAFE] text-[#1E40AF]' },
+                    { step: '2', label: 'Generate Product Name', color: 'bg-[#EDE9FE] text-[#6D28D9]' },
+                    { step: '3', label: 'Assign NIGP Code', color: 'bg-[#DCFCE7] text-[#15803D]' },
+                    { step: '4', label: 'Categorize (product/service)', color: 'bg-[#FEF3C7] text-[#92400E]' },
+                  ].map(({ step, label, color }) => (
+                    <div key={step} className={`flex items-center gap-2 px-3 py-2 rounded-lg ${color} font-medium`}>
+                      <span className="w-4 h-4 rounded-full bg-white/60 flex items-center justify-center text-[10px] font-bold">{step}</span>
+                      {label}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-[auto_1fr] gap-x-4 px-5 py-3">
+                <div className="flex items-start gap-1.5 pt-0.5">
+                  <span className="font-mono font-bold text-[#10B981] bg-[#DCFCE7] px-1.5 py-0.5 rounded">POST</span>
+                  <code className="text-[#0F172A] font-mono">/api/workflow</code>
+                </div>
+                <p className="text-[#475569] leading-relaxed">
+                  Run the workflow pipeline. Body: <code className="bg-[#F1F5F9] px-1 rounded">&#123; &quot;message&quot;: &quot;…&quot;, &quot;mode&quot;: &quot;instant&quot; | &quot;queue&quot; &#125;</code>.
+                  Returns all pipeline output fields merged into one JSON object.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-[auto_1fr] gap-x-4 px-5 py-3">
+                <div className="flex items-start gap-1.5 pt-0.5">
+                  <span className="font-mono font-bold text-[#7C3AED] bg-[#EDE9FE] px-1.5 py-0.5 rounded">GET</span>
+                  <code className="text-[#0F172A] font-mono">/api/workflow/&#123;jobId&#125;</code>
+                </div>
+                <p className="text-[#475569] leading-relaxed">
+                  Poll workflow job status. Same semantics as the agent endpoint:
+                  <code className="bg-[#F1F5F9] px-1 rounded ml-1">202</code> pending ·
+                  <code className="bg-[#F1F5F9] px-1 rounded ml-1">200</code> done ·
+                  <code className="bg-[#F1F5F9] px-1 rounded ml-1">502</code> error.
+                </p>
+              </div>
+
+              <div className="px-5 py-3 bg-[#FAF5FF]">
+                <p className="text-[#64748B] mb-2 font-semibold">Response (200 OK):</p>
+                <pre className="bg-[#1E293B] rounded-lg px-4 py-3 text-[#E2E8F0] font-mono leading-relaxed text-[11px] overflow-x-auto">{`{
+  "standardized_description": "Cable HDMI SPECO Technologies HDCL25: 25 ft, color azul, blindaje triple",
+  "product_name": "Cable HDMI SPECO Technologies HDCL25: 25 ft, color azul, blindaje triple",
+  "nigp_category_code": "287",
+  "nigp_sub_category_code": "96",
+  "nigp_description": "Wire and Cable, Electronic: Audio, Coaxial, Hook-Up, Lead-In, etc.",
+  "confidence": 0.95,
+  "category": "producto"
+}`}</pre>
+              </div>
+            </div>
           </div>
         </div>
 
